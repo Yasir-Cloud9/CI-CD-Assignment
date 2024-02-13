@@ -1,0 +1,50 @@
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+public class RestRequestBuilder {
+
+    public static String buildRequest() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode rootNode = objectMapper.createObjectNode();
+        rootNode.put("model", "gpt-4");
+        rootNode.put("temperature", 0.1);
+
+        ArrayNode messagesArray = objectMapper.createArrayNode();
+        messagesArray.add(createMessageObject(objectMapper, "system", "You are a helpful assistant."));
+        messagesArray.add(createMessageObject(objectMapper, "system", "Given the following call transcripts XYZ......."));
+        messagesArray.add(createMessageObject(objectMapper, "user", "Summarize the last 3 earnings reports?"));
+        messagesArray.add(createMessageObject(objectMapper, "assistant", "A summarization of the 3 earnings report are as follows ...."));
+        messagesArray.add(createMessageObject(objectMapper, "user", "Was anything mentioned about future prospects?"));
+
+        rootNode.set("messages", messagesArray);
+        rootNode.put("stream", false);
+        rootNode.put("subjectArea", "CALL_TRANSCRIPTS");
+
+        ObjectNode subjectAreaContext = objectMapper.createObjectNode();
+        ArrayNode callTranscriptsArray = objectMapper.createArrayNode();
+        callTranscriptsArray.add("CompanyNameCallTranscriptYYYYQ1");
+        callTranscriptsArray.add("CompanyNameCallTranscriptYYYYQ2");
+        callTranscriptsArray.add("CompanyNameCallTranscriptYYYYQ3");
+        subjectAreaContext.set("callTranscripts", callTranscriptsArray);
+
+        rootNode.set("subjectAreaContext", subjectAreaContext);
+
+        return rootNode.toString();
+    }
+
+    private static JsonNode createMessageObject(ObjectMapper objectMapper, String role, String content) {
+        ObjectNode messageObject = objectMapper.createObjectNode();
+        messageObject.put("role", role);
+        messageObject.put("content", content);
+        return messageObject;
+    }
+
+    // Example usage
+    public static void main(String[] args) {
+        String jsonRequest = RestRequestBuilder.buildRequest();
+        System.out.println(jsonRequest);
+    }
+}
